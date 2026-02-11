@@ -39,32 +39,35 @@ const cartSlice = createSlice({
       const id = action.payload;
       const existingItem = state.items.find((item) => item.id === id);
 
-      if (existingItem) {
-        state.totalQuantity--;
-        state.totalAmount -= existingItem.price;
+      if (!existingItem) return;
 
-        if (existingItem.quantity === 1) {
-          state.items = state.items.filter((item) => item.id !== id);
-        } else {
-          existingItem.quantity--;
-          existingItem.totalPrice -= existingItem.price;
-        }
+      state.totalQuantity--;
+      state.totalAmount -= existingItem.price;
+
+      if (existingItem.quantity === 1) {
+        state.items = state.items.filter((item) => item.id !== id);
+      } else {
+        existingItem.quantity--;
+        existingItem.totalPrice -= existingItem.price;
       }
     },
 
-    deleteItem(state, action) {
-      const id = action.payload;
-      const existingItem = state.items.find((item) => item.id === id);
+    updateQuantity(state, action) {
+      const { id, quantity } = action.payload;
+      const item = state.items.find((item) => item.id === id);
 
-      if (existingItem) {
-        state.totalQuantity -= existingItem.quantity;
-        state.totalAmount -= existingItem.totalPrice;
-        state.items = state.items.filter((item) => item.id !== id);
-      }
+      if (!item || quantity < 1) return;
+
+      // cập nhật tổng số lượng & tổng tiền
+      state.totalQuantity += quantity - item.quantity;
+      state.totalAmount +=
+        (quantity - item.quantity) * item.price;
+
+      item.quantity = quantity;
+      item.totalPrice = quantity * item.price;
     },
   },
 });
 
-export const { addItem, removeItem, deleteItem } = cartSlice.actions;
+export const { addItem, removeItem, updateQuantity } = cartSlice.actions;
 export default cartSlice.reducer;
-
